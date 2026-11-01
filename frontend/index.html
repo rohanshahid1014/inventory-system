@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventory &amp; Shop Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+ --ink:#1d1b2e;--mut:#6b6880;--line:#e6e4f1;--bg:#f4f3fb;--card:#fff;
+ --side1:#2b1f55;--side2:#432d82;
+ --pri:#5b4bd6;--pri-d:#4a3bc0;--pri-soft:#edebfc;
+ --mint:#0f9d6e;--mint-soft:#e2f6ef;
+ --amber:#c07908;--amber-soft:#fdf1da;
+ --rose:#d43f5c;--rose-soft:#fdebef;
+ --sky:#2b74d4;--sky-soft:#e8f1fd;
+ --shadow:0 1px 2px rgba(29,27,46,.05),0 10px 28px -16px rgba(29,27,46,.35);
+ --sans:Inter,system-ui,Segoe UI,Roboto,sans-serif;
+ --disp:Outfit,Inter,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font:400 15px/1.5 var(--sans);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}
+
+/* ---------- shell ---------- */
+.app{display:flex;min-height:100vh}
+aside{width:228px;flex-shrink:0;padding:20px 14px;color:#cdc5ea;
+ background:linear-gradient(170deg,var(--side2) 0%,var(--side1) 70%)}
+aside h1{display:flex;align-items:center;gap:9px;font:600 16px/1.2 var(--disp);color:#fff;margin:4px 6px 22px;letter-spacing:.1px}
+aside h1::before{content:"";width:11px;height:11px;border-radius:3px;background:linear-gradient(135deg,#8ef0c8,#5b4bd6);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+aside button{display:flex;align-items:center;width:100%;text-align:left;background:none;border:0;color:inherit;
+ padding:10px 12px;border-radius:9px;cursor:pointer;margin-bottom:2px;transition:background .14s,color .14s}
+aside button:hover{background:rgba(255,255,255,.08);color:#fff}
+aside button.on{background:rgba(255,255,255,.14);color:#fff;font-weight:600;box-shadow:inset 3px 0 0 #8ef0c8}
+aside .who{margin:22px 6px 6px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);font-size:13px;color:#a79ccb}
+main{flex:1;padding:28px 30px;min-width:0}
+h2{margin:0 0 18px;font:600 24px/1.2 var(--disp);letter-spacing:-.2px}
+h3{font:600 16px/1.3 var(--disp);margin:0 0 12px}
+main > h3{margin-top:4px}
+
+/* ---------- controls ---------- */
+.bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+input,select{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:0;color:var(--ink);transition:border-color .14s,box-shadow .14s}
+input::placeholder{color:#9b97ad}
+input:hover,select:hover{border-color:#cfcbe6}
+input:focus,select:focus{outline:0;border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-soft)}
+button:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.btn{background:var(--pri);color:#fff;border:0;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:500;
+ box-shadow:0 1px 2px rgba(91,75,214,.3);transition:background .14s,transform .08s,box-shadow .14s}
+.btn:hover{background:var(--pri-d);box-shadow:0 3px 10px -2px rgba(91,75,214,.45)}
+.btn:active{transform:translateY(1px)}
+.btn.alt{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn.alt:hover{background:#faf9ff;border-color:#cfcbe6}
+.btn.del{background:#fff;color:var(--rose);border:1px solid #f3d6dd;box-shadow:none}
+.btn.del:hover{background:var(--rose-soft);border-color:#eebcc7}
+.btn.sm{padding:5px 11px;font-size:13px}
+
+/* ---------- tables ---------- */
+.wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow-x:auto;margin-bottom:20px;box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12.5px;color:#5c568a;font-weight:600;letter-spacing:.2px;background:linear-gradient(#f7f6fd,#f2f0fb)}
+td{font-variant-numeric:tabular-nums}
+tbody tr:hover td,table tr:hover td{background:#faf9ff}
+tr:first-child:hover td{background:none}
+tr:last-child td{border-bottom:0}
+.empty{padding:26px;color:var(--mut)}
+
+/* ---------- badges ---------- */
+.tag{background:var(--amber-soft);color:var(--amber);padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;margin-left:8px;border:1px solid #f2dfb6}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600}
+.pill.adm{background:var(--pri-soft);color:var(--pri-d)}
+.pill.stf{background:var(--mint-soft);color:var(--mint)}
+
+/* ---------- stat cards ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px;margin-bottom:24px}
+.stat{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:hidden;box-shadow:var(--shadow)}
+.stat::before{content:"";position:absolute;inset:0 auto 0 0;width:4px}
+.stat b{display:block;font:600 27px/1.15 var(--disp);font-variant-numeric:tabular-nums;margin-bottom:3px}
+.stat span{color:var(--mut);font-size:13px}
+.s1::before{background:var(--pri)} .s1 b{color:var(--pri-d)}
+.s2::before{background:var(--amber)} .s2 b{color:var(--amber)}
+.s3::before{background:var(--mint)} .s3 b{color:var(--mint)}
+.s4::before{background:var(--sky)} .s4 b{color:var(--sky)}
+
+/* ---------- panels, tabs, totals ---------- */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:22px;box-shadow:var(--shadow)}
+.panel .wrap{box-shadow:none;margin-bottom:0}
+.panel .empty{border:1px dashed var(--line);border-radius:10px;background:#fbfaff;text-align:center}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button.on{background:var(--pri);color:#fff;border-color:var(--pri);box-shadow:0 1px 2px rgba(91,75,214,.3)}
+.tabs button.on:hover{background:var(--pri-d)}
+.total{font:600 19px/1.2 var(--disp);font-variant-numeric:tabular-nums;margin:14px 0;padding:10px 14px;border-radius:9px;
+ background:var(--mint-soft);color:var(--mint);display:inline-block}
+
+/* ---------- modal ---------- */
+#modal{position:fixed;inset:0;background:rgba(29,27,46,.45);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+#modal.show{display:flex}
+.dlg{background:#fff;border-radius:14px;padding:22px;width:100%;max-width:430px;box-shadow:0 24px 60px -20px rgba(29,27,46,.5)}
+.dlg h3{margin:0 0 16px;font-size:18px}
+.dlg label{display:block;font-size:13px;color:var(--mut);margin-top:12px;font-weight:500}
+.dlg input,.dlg select{width:100%;margin-top:5px}
+.dlg .row{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+.err{color:var(--rose);font-size:13px;min-height:18px;margin-top:10px;font-weight:500}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:700px){
+ .app{flex-direction:column}
+ aside{width:auto;display:flex;flex-wrap:wrap;gap:4px;padding:10px}
+ aside h1,aside .who{display:none}
+ aside button{width:auto}
+ main{padding:18px 14px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="modal"></div>
+<script>
+let DB = { suppliers: [], products: [], staff: [], sales: [], purchases: [] };
+const PK = { products: 'ProductID', suppliers: 'SupplierID', staff: 'StaffID' };
+
+function save(table, row, isNew) {
+    const url = `http://localhost:3000/api/${table}`;
+    const id = row[PK[table]];
+    fetch(isNew ? url : `${url}/${id}`, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(row)
+    }).then(() => location.reload()).catch(err => console.error('Error saving:', err));
+}
+
+function remove(table, id) { 
+    fetch(`http://localhost:3000/api/${table}/${id}`, { method: 'DELETE' })
+    .catch(err => console.error('Error deleting:', err));
+}
+
+let me=null, page='dashboard', q='', lines=[], party='', rtab='daily';
+const $=s=>document.querySelector(s);
+const money=n=>'Rs '+Number(n).toLocaleString();
+const today=()=>new Date().toISOString().slice(0,10);
+const prod=id=>DB.products.find(p=>p.ProductID==id)||{};
+const supName=id=>(DB.suppliers.find(s=>s.SupplierID==id)||{}).Name||'-';
+const low=p=>p.QtyInStock<=p.ReorderLevel;
+const isAdmin=()=>me&&me.Role==='Admin';
+const table=(heads,rows)=>rows.length?`<div class="wrap"><table><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`:`<div class="wrap"><div class="empty">Nothing here yet.</div></div>`;
+
+const NAV=[['dashboard','Dashboard'],['products','Products'],['suppliers','Suppliers'],['purchases','Purchases'],['sales','Sales & Billing'],['reports','Reports'],['staff','Users','admin']];
+function go(p){page=p;q='';lines=[];party='';render()}
+
+function render(){
+ // Failsafe: If the database hasn't loaded the user yet, use a temporary admin
+ if(!me) me = { Name: 'System Admin', Role: 'Admin', StaffID: 1 }; 
+ 
+ const nav=NAV.filter(n=>!n[2]||isAdmin()).map(n=>`<button class="${page===n[0]?'on':''}" onclick="go('${n[0]}')">${n[1]}</button>`).join('');
+ $('#root').innerHTML=`<div class="app"><aside><h1>Inventory &amp; Shop</h1>${nav}<div class="who">${me.Name} (${me.Role})</div></aside><main>${VIEWS[page]()}</main></div>`;
+}
+
+function dashboard(){
+ const lows=DB.products.filter(low),t=today();
+ const todaySales=DB.sales.filter(s=>s.Date===t).reduce((a,s)=>a+s.TotalAmount,0);
+ return `<h2>Dashboard</h2><div class="stats">
+ <div class="stat s1"><b>${DB.products.length}</b><span>Products</span></div>
+ <div class="stat s2"><b>${lows.length}</b><span>Low-stock items</span></div>
+ <div class="stat s3"><b>${money(todaySales)}</b><span>Sales today</span></div>
+ <div class="stat s4"><b>${DB.purchases.length}</b><span>Purchases recorded</span></div></div>
+ <h3>Items to reorder</h3>${table(['Product','In stock','Reorder level','Supplier'],lows.map(p=>[p.Name,p.QtyInStock,p.ReorderLevel,supName(p.SupplierID)]))}`;
+}
+
+const FIELDS={
+ products:[['Name'],['Category'],['UnitPrice','number'],['QtyInStock','number'],['ReorderLevel','number'],['SupplierID','supplier']],
+ suppliers:[['Name'],['ContactNo'],['Address'],['Email']],
+ staff:[['Name'],['Role','role'],['Username']]};
+const COLS={
+ products:[['ID',r=>r.ProductID],['Name',r=>r.Name],['Category',r=>r.Category],['Price',r=>money(r.UnitPrice)],['In stock',r=>r.QtyInStock+(low(r)?'<span class="tag">Low</span>':'')],['Reorder level',r=>r.ReorderLevel],['Supplier',r=>supName(r.SupplierID)]],
+ suppliers:[['ID',r=>r.SupplierID],['Name',r=>r.Name],['Contact',r=>r.ContactNo],['Address',r=>r.Address],['Email',r=>r.Email]],
+ staff:[['ID',r=>r.StaffID],['Name',r=>r.Name],['Role',r=>`<span class="pill ${r.Role==='Admin'?'adm':'stf'}">${r.Role}</span>`],['Username',r=>r.Username]]};
+
+function crud(t,title,single){
+ const rows=DB[t].filter(r=>JSON.stringify(Object.values(r)).toLowerCase().includes(q.toLowerCase()));
+ const k=PK[t];
+ const body=table([...COLS[t].map(c=>c[0]),'Actions'],rows.map(r=>[...COLS[t].map(c=>c[1](r)),
+  `<button class="btn alt sm" onclick="openForm('${t}',${r[k]})">Edit</button> ${isAdmin()?`<button class="btn del sm" onclick="delRow('${t}',${r[k]})">Delete</button>`:''}`]));
+ return `<h2>${title}</h2><div class="bar"><input placeholder="Search ${title.toLowerCase()}" value="${q}" oninput="q=this.value;render();const i=document.querySelector('.bar input');i.focus();i.setSelectionRange(q.length,q.length)"><button class="btn" onclick="openForm('${t}')">Add ${single}</button></div>${body}`;
+}
+
+function openForm(t,id){
+ const k=PK[t],row=id?DB[t].find(r=>r[k]==id):{};
+ const f=FIELDS[t].map(([n,type])=>{
+  let inp;
+  if(type==='supplier')inp=`<select name="${n}">${DB.suppliers.map(s=>`<option value="${s.SupplierID}" ${row[n]==s.SupplierID?'selected':''}>${s.Name}</option>`).join('')}</select>`;
+  else if(type==='role')inp=`<select name="${n}">${['Admin','Staff'].map(x=>`<option ${row[n]===x?'selected':''}>${x}</option>`).join('')}</select>`;
+  else inp=`<input name="${n}" type="${type||'text'}" ${type==='number'?'min="0"':''} value="${row[n]??''}">`;
+  return `<label>${n}${inp}</label>`}).join('');
+ $('#modal').innerHTML=`<div class="dlg"><h3>${id?'Edit':'Add'} record</h3>${f}<div class="err" id="ferr"></div><div class="row"><button class="btn alt" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveForm('${t}',${id||0})">Save</button></div></div>`;
+ $('#modal').classList.add('show');
+}
+function closeModal(){$('#modal').classList.remove('show')}
+
+function saveForm(t,id){
+ const k=PK[t],data={};
+ for(const [n,type] of FIELDS[t]){const v=$(`#modal [name=${n}]`).value.trim();
+  if(!v&&n==='Name'){$('#ferr').textContent='Name is required.';return}
+  data[n]=(type==='number'||type==='supplier')?Number(v):v}
+ if(id){Object.assign(DB[t].find(r=>r[k]==id),data);save(t,DB[t].find(r=>r[k]==id),false)}
+ else{save(t,data,true)}
+ closeModal();
+}
+
+function delRow(t,id){if(!confirm('Delete this record?'))return;DB[t]=DB[t].filter(r=>r[PK[t]]!=id);remove(t,id);render()}
+
+function txnView(kind){
+ const sale=kind==='sales',list=DB[kind];
+ const total=lines.reduce((a,l)=>a+l.Qty*l.Price,0);
+ const partyInp=sale?`<input placeholder="Customer name" value="${party}" onchange="party=this.value">`
+  :`<select onchange="party=this.value">${DB.suppliers.map(s=>`<option value="${s.SupplierID}" ${party==s.SupplierID?'selected':''}>${s.Name}</option>`).join('')}</select>`;
+ if(!sale&&!party && DB.suppliers.length>0)party=DB.suppliers[0].SupplierID;
+ const rows=lines.map((l,i)=>`<tr><td><select onchange="setLine(${i},'ProductID',this.value)">${DB.products.map(p=>`<option value="${p.ProductID}" ${p.ProductID==l.ProductID?'selected':''}>${p.Name} (${p.QtyInStock} in stock)</option>`).join('')}</select></td>
+  <td><input type="number" min="1" style="width:80px" value="${l.Qty}" onchange="setLine(${i},'Qty',this.value)"></td>
+  <td><input type="number" min="0" style="width:100px" value="${l.Price}" onchange="setLine(${i},'Price',this.value)"></td>
+  <td>${money(l.Qty*l.Price)}</td><td><button class="btn del sm" onclick="lines.splice(${i},1);render()">Remove</button></td></tr>`).join('');
+ const hist=table([sale?'Bill #':'Purchase #',sale?'Customer':'Supplier','Date','Items','Total'],[...list].reverse().map(r=>[r[sale?'SaleID':'PurchaseID'],sale?r.CustomerName:supName(r.SupplierID),r.Date,r.details.map(d=>prod(d.ProductID).Name+' ×'+d.Qty).join(', '),money(r.TotalAmount)]));
+ return `<h2>${sale?'Sales & Billing':'Purchases'}</h2><div class="panel"><h3>${sale?'New bill':'New purchase'}</h3>
+ <div class="bar">${partyInp}<button class="btn alt" onclick="addLine('${kind}')">Add item</button></div>
+ ${lines.length?`<div class="wrap"><table><tr><th>Product</th><th>Qty</th><th>${sale?'Unit price':'Unit cost'}</th><th>Line total</th><th></th></tr>${rows}</table></div>`:'<div class="empty">Add an item to start.</div>'}
+ <div class="total">Total: ${money(total)}</div><div class="err" id="terr"></div>
+ <button class="btn" onclick="submitTxn('${kind}')">${sale?'Save bill':'Save purchase'}</button></div>
+ <h3>${sale?'Past bills':'Past purchases'}</h3>${hist}`;
+}
+
+function addLine(kind){if(DB.products.length===0) return; const p=DB.products[0];lines.push({ProductID:p.ProductID,Qty:1,Price:kind==='sales'?p.UnitPrice:Math.round(p.UnitPrice*0.9)});render()}
+function setLine(i,f,v){const l=lines[i];l[f]=Number(v);
+ if(f==='ProductID'){const p=prod(l.ProductID);l.Price=page==='sales'?p.UnitPrice:Math.round(p.UnitPrice*0.9)}render()}
+
+function submitTxn(kind){
+ const sale=kind==='sales';
+ if(!lines.length){$('#terr').textContent='Add at least one item.';return}
+ if(lines.some(l=>l.Qty<1)){$('#terr').textContent='Quantity must be at least 1.';return}
+ if(sale){const bad=lines.find(l=>l.Qty>prod(l.ProductID).QtyInStock);
+  if(bad){$('#terr').textContent='Not enough stock for '+prod(bad.ProductID).Name+'.';return}}
+ 
+ const rec={StaffID:me.StaffID,TotalAmount:lines.reduce((a,l)=>a+l.Qty*l.Price,0),details:lines.map(l=>({...l}))};
+ if(sale){rec.CustomerName=party||'Walk-in'}else{rec.SupplierID=Number(party)}
+
+ fetch(`http://localhost:3000/api/${kind}`, {
+     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec)
+ }).then(() => location.reload()).catch(err => $('#terr').textContent='Error saving transaction.');
+}
+
+function reports(){
+ const tabs=[['daily','Daily sales'],['stock','Current stock'],['lowstock','Low stock'],['supplier','Supplier purchases']];
+ let body='';
+ if(rtab==='daily'){const g={};DB.sales.forEach(s=>{g[s.Date]=g[s.Date]||{n:0,t:0};g[s.Date].n++;g[s.Date].t+=s.TotalAmount});
+  body=table(['Date','Bills','Total sales'],Object.keys(g).sort().reverse().map(d=>[d,g[d].n,money(g[d].t)]))}
+ if(rtab==='stock')body=table(['Product','Category','In stock','Unit price','Stock value'],DB.products.map(p=>[p.Name,p.Category,p.QtyInStock,money(p.UnitPrice),money(p.QtyInStock*p.UnitPrice)]));
+ if(rtab==='lowstock')body=table(['Product','In stock','Reorder level','Supplier'],DB.products.filter(low).map(p=>[p.Name,p.QtyInStock,p.ReorderLevel,supName(p.SupplierID)]));
+ if(rtab==='supplier')body=table(['Supplier','Purchase #','Date','Total'],[...DB.purchases].sort((a,b)=>a.SupplierID-b.SupplierID).map(p=>[supName(p.SupplierID),p.PurchaseID,p.Date,money(p.TotalAmount)]));
+ return `<h2>Reports</h2><div class="tabs">${tabs.map(t=>`<button class="btn alt ${rtab===t[0]?'on':''}" onclick="rtab='${t[0]}';render()">${t[1]}</button>`).join('')}</div>${body}`;
+}
+
+const VIEWS={dashboard,products:()=>crud('products','Products','product'),suppliers:()=>crud('suppliers','Suppliers','supplier'),
+ purchases:()=>txnView('purchases'),sales:()=>txnView('sales'),reports,staff:()=>crud('staff','Users','user')};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+Promise.all([
+    fetch('http://localhost:3000/api/products').then(res => res.json()),
+    fetch('http://localhost:3000/api/suppliers').then(res => res.json()),
+    fetch('http://localhost:3000/api/staff').then(res => res.json()),
+    fetch('http://localhost:3000/api/sales').then(res => res.json()),
+    fetch('http://localhost:3000/api/purchases').then(res => res.json())
+]).then(([productsData, suppliersData, staffData, salesData, purchasesData]) => {
+    DB.suppliers = suppliersData.map(s => ({ SupplierID: s.SupplierID, Name: s.SupplierName, ContactNo: s.Phone || '-', Address: s.Address || '-', Email: s.Email || '-' }));
+    DB.products = productsData.map(p => ({ ProductID: p.ProductID, Name: p.ProductName, Category: 'Inventory', UnitPrice: p.UnitPrice, QtyInStock: p.QtyInStock, ReorderLevel: p.ReorderLevel, SupplierID: p.SupplierID }));
+    DB.staff = staffData.map(s => ({ StaffID: s.StaffID, Name: `${s.FirstName} ${s.LastName}`, Role: s.Role, Username: s.FirstName.toLowerCase() }));
+    DB.sales = salesData;
+    DB.purchases = purchasesData;
+    
+    // Create an admin if none exist in the database, then auto-login as Admin
+    if(DB.staff.length === 0) DB.staff.push({StaffID: 1, Name: 'System Admin', Role: 'Admin', Username: 'admin'});
+    me = DB.staff.find(s => s.Role === 'Admin') || DB.staff[0];
+    
+    render();
+}).catch(err => { console.error('API Error:', err); render(); });
+</script>
+</body>
+</html>

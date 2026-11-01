@@ -1,0 +1,12 @@
+# Dependencies — GitHub never wants these, they get reinstalled with npm install
+node_modules/
+
+# Secrets — the real database password lives here, never commit it
+.env
+
+# macOS junk
+.DS_Store
+
+# Logs
+npm-debug.log*
+*.log
